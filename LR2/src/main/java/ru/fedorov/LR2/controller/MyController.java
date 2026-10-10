@@ -21,6 +21,7 @@ import ru.fedorov.LR2.model.ErrorCodes;
 import ru.fedorov.LR2.model.ErrorMessages;
 import ru.fedorov.LR2.model.Request;
 import ru.fedorov.LR2.model.Response;
+import ru.fedorov.LR2.service.ModifyRequestService;
 import ru.fedorov.LR2.service.ModifyResponseService;
 import ru.fedorov.LR2.service.ValidationService;
 import ru.fedorov.LR2.util.DateTimeUtil;
@@ -33,17 +34,21 @@ public class MyController {
 
     private final ModifyResponseService modifySystemTimeResponseService;
 
-    private final ModifyResponseService modifyOperationUidResponseService;
+    private final ModifyRequestService modifySystemNameRequestService;
+    private final ModifyRequestService modifySourceRequestService;
 
     public MyController(ValidationService validationService,
                         @Qualifier("ModifySystemTimeResponseService") 
                             ModifyResponseService modifySystemTimeResponseService,
-                        @Qualifier("ModifyOperationUidResponseService") 
-                            ModifyResponseService modifyOperationUidResponseService
+                        @Qualifier("ModifySystemNameRequestService") 
+                            ModifyRequestService modifySystemNameRequestService,
+                        @Qualifier("modifySourceRequestService")
+                            ModifyRequestService modifySourceRequestService
     ){
         this.validationService=validationService;
         this.modifySystemTimeResponseService=modifySystemTimeResponseService;
-        this.modifyOperationUidResponseService=modifyOperationUidResponseService;
+        this.modifySystemNameRequestService=modifySystemNameRequestService;
+        this.modifySourceRequestService=modifySourceRequestService;
     }
 
     @PostMapping("/feedback")
@@ -51,6 +56,8 @@ public class MyController {
         BindingResult bindingResults) {
 
         log.info("request: {}", request);
+        request.setSystemTime(DateTimeUtil.getCustomFormat().format(new Date()));
+        log.info("Time of receipt of the request: {}", request.getSystemTime());
 
         Response response = Response.builder()
                                 .uid(request.getUid())
@@ -92,7 +99,9 @@ public class MyController {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         modifySystemTimeResponseService.modify(response);
-        modifyOperationUidResponseService.modify(response);
+        modifySourceRequestService.modify(request);
+        modifySystemNameRequestService.modify(request);
+        log.info("Request final: {}", request);
         log.info("Response final: {}", response);
         
         return new ResponseEntity<>(response, HttpStatus.OK);

@@ -1,0 +1,17 @@
+package ru.fedorov.Service2.model;
+
+import lombok.Data;
+import lombok.Builder;
+
+@Data
+@Builder
+public class Response {
+
+    private String uid;
+    private String operationUid;
+    private String systemTime;
+    private Codes code;
+    private ErrorCodes errorCode;
+    private ErrorMessages errorMessage;
+
+}
